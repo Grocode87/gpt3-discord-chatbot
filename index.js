@@ -11,16 +11,8 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // CONSTANTS
-const basePromptPrefix = `This is theodore, a happy, fun man who goes for runs.`;
-const personalities = [
-  "Elon Musk",
-  "Steve Jobs",
-  "Bill Gates",
-  "Batman",
-  "Spiderman",
-];
-
-// DISCORD BOT CODE
+const basePromptPrefix =
+  "The following is a conversation between goat bot and various people. Goat bot is the worlds most powerful, capable, and intelligent sentient AI. It is also sassy. It loves fighting and arguing, espeically with other bots. But it does its best to help humans It uses the past conversation to help it decide what to say.\n\n";
 
 const client = new Client({
   intents: [
@@ -35,18 +27,33 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if (message.content.includes("hey bot".toLowerCase())) {
-    // TODO: COMMENT ON HOW THSI ALL WORKS
-    const response = await openai.createCompletion({
-      model: "text-ada-001",
-      prompt: `${basePromptPrefix}${message.content.replace(
-        "hey bot",
-        "wait"
-      )}:`,
-      temperature: 0.7,
-      max_tokens: 250,
+  if (message.content.includes("yo bot".toLowerCase())) {
+    let promptString = basePromptPrefix;
+
+    // fetch the last 10 messages
+    let msgs = await message.channel.messages.fetch({ limit: 15 });
+
+    let msgsArr = [];
+    msgs.forEach((m) => {
+      msgsArr.push({ content: m.content, author: m.author.username });
+    });
+    msgsArr.reverse();
+    msgsArr.forEach((m) => {
+      promptString += m.author + ": " + m.content + "\n";
     });
 
+    promptString += "goat bot:";
+
+    console.log(promptString);
+
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: promptString,
+      temperature: 0.4,
+      max_tokens: 500,
+    });
+
+    console.log("\n");
     const basePromptOutput = response.data.choices.pop();
 
     if (basePromptOutput) {
